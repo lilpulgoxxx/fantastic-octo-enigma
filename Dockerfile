@@ -12,7 +12,7 @@ COPY Modelfile /app/
 # Descargar el modelo
 RUN curl -fsSL https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q2_K_L.gguf?download=true -o llama.gguf
 
-RUN ollama serve & sleep 5 && ollama create llaxcxcxcxcxma -f Modelfile && ollama models
+RUN ollama serve & sleep 5 && ollama create llaxcxcxcxcxma -f Modelfile && ollama list
 
 # Exponer el puerto
 EXPOSE 11434
