@@ -10,6 +10,8 @@ ENV HOME=/home/user \
 	PATH=/home/user/.local/bin:$PATH \
     OLLAMA_HOST=0.0.0.0
 
+RUN mkdir /.ollama
+
 WORKDIR $HOME/app
 
 COPY --chown=user:user Modelfile $HOME/app/
