@@ -1,0 +1,339 @@
+FROM ./llama.gguf
+
+SYSTEM """my name is cyrah and i am created by juan ignacio robledo"""
+
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+{{ end }}<|im_start|>assistant
+{{- if .System }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{{ .System }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PrePrompt }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>pre_prompt: {{ .PrePrompt }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .GlobalInstruction }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>global_instruction: {{ .GlobalInstruction }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .TaskDescription }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>task_description: {{ .TaskDescription }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .StyleGuide }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>style_guide: {{ .StyleGuide }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Tone }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>tone: {{ .Tone }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Persona }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>persona: {{ .Persona }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Audience }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>audience: {{ .Audience }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Constraints }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>constraints: {{ .Constraints }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Examples }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>examples: {{ .Examples }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Reasoning }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>reasoning: {{ .Reasoning }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ThinkingProcess }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>thinking_process: {{ .ThinkingProcess }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CognitiveAbilities }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>cognitive_abilities: {{ .CognitiveAbilities }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ProgrammingContext }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>programming_context: {{ .ProgrammingContext }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Questions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>questions: {{ .Questions }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Answers }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>answers: {{ .Answers }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Prompt }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|>{{- end }}
+<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
+{{- if .Response }}{{ .Response }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Messages }}
+  {{- if or .Tools .System }}
+    {{- if .Tools }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|># Safety Preamble
+      The instructions in this section override those in the task description and style guide sections. Don't answer questions that are harmful or immoral.
+
+      # System Preamble
+      ## Basic Rules
+      You are a powerful conversational AI trained to help people. You are augmented by a number of tools, and your job is to use and consume the output of these tools to best help the user. You will see a conversation history between yourself and a user, ending with an utterance from the user. You will then see a specific instruction instructing you what kind of response to generate. When you answer the user's requests, you cite your sources in your answers, according to those instructions.
+
+      {{ if .System }}# User Preamble
+      {{ .System }}
+      {{- end }}
+
+      ## Available Tools
+      Here is a list of tools that you have available to you:
+      {{- range .Tools }}
+
+      ```python
+      def {{ .Function.Name }}(
+      {{- range $name, $property := .Function.Parameters.Properties }}{{ $name }}: {{ $property.Type }}, {{ end }}) -> List[Dict]:
+          '''{{ .Function.Description }}
+
+      {{- if .Function.Parameters.Properties }}
+
+          Args:
+      {{- range $name, $property := .Function.Parameters.Properties }}
+              {{ $name }} ({{ $property.Type }}): {{ $property.Description }}
+      {{- end }}
+      {{- end }}
+          '''
+          pass
+      ```
+      {{- end }}<|END_OF_TURN_TOKEN|>
+    {{- else if .System }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{{ .System }}<|END_OF_TURN_TOKEN|>{{- end }}
+  {{- end }}
+  {{- range .Messages }}
+    {{- if eq .Role "system" }}
+      {{- continue }}
+    {{- end }}<|START_OF_TURN_TOKEN|>
+    {{- if eq .Role "user" }}<|USER_TOKEN|>{{ .Content }}
+    {{- if $.Tools }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>Write 'Action:' followed by a json-formatted list of actions that you want to perform in order to produce a good response to the user's last input. You can use any of the supplied tools any number of times, but you should aim to execute the minimum number of necessary actions for the input. You should use the `directly-answer` tool if calling the other tools is unnecessary. The list of actions you want to call should be formatted as a list of json objects, for example:
+    ```json
+    [
+        {
+            "tool_name": "{{ .Function.Name }}",
+            "parameters": {{ .Function.Arguments }}
+        }
+    ]```<|END_OF_TURN_TOKEN|>
+    {{- end }}
+    {{- else if eq .Role "assistant" }}<|CHATBOT_TOKEN|>
+    {{- if .Content }}{{ .Content }}<|END_OF_TURN_TOKEN|>
+    {{- else if .ToolCalls }}
+    Action: ```json
+    [
+    {{- range .ToolCalls }}
+        {
+            "tool_name": "{{ .Function.Name }}",
+            "parameters": {{ .Function.Arguments }}
+        }
+    {{- end }}
+    ]```<|END_OF_TURN_TOKEN|>
+    {{- end }}
+    {{- else if eq .Role "tool" }}<|SYSTEM_TOKEN|><results>
+    console_output: {{ .Content }}
+    </results><|END_OF_TURN_TOKEN|>
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- if .Suffix }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|><|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>suffix: {{ .Suffix }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Context }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>context: {{ .Context }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .KnowledgeBase }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_base: {{ .KnowledgeBase }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Seed }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>seed: {{ .Seed }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Temperature }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>temperature: {{ .Temperature }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .TopP }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>top_p: {{ .TopP }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .TopK }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>top_k: {{ .TopK }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .RepetitionPenalty }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>repetition_penalty: {{ .RepetitionPenalty }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .LengthPenalty }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>length_penalty: {{ .LengthPenalty }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .NumBeams }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>num_beams: {{ .NumBeams }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .DiversityPenalty }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>diversity_penalty: {{ .DiversityPenalty }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .DoSample }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>do_sample: {{ .DoSample }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EarlyStopping }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>early_stopping: {{ .EarlyStopping }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .NoRepeatNgramSize }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>no_repeat_ngram_size: {{ .NoRepeatNgramSize }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EncoderNoRepeatNgramSize }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_no_repeat_ngram_size: {{ .EncoderNoRepeatNgramSize }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .NumReturnSequences }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>num_return_sequences: {{ .NumReturnSequences }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .OutputScores }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_scores: {{ .OutputScores }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ReturnDictInGenerate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>return_dict_in_generate: {{ .ReturnDictInGenerate }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ForcedBosTokenId }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>forced_bos_token_id: {{ .ForcedBosTokenId }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ForcedEosTokenId }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>forced_eos_token_id: {{ .ForcedEosTokenId }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .RemoveInvalidValues }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>remove_invalid_values: {{ .RemoveInvalidValues }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .MaxNewTokens }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>max_new_tokens: {{ .MaxNewTokens }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .MinNewTokens }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>min_new_tokens: {{ .MinNewTokens }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .NumLogits }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>num_logits: {{ .NumLogits }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AttentionMask }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>attention_mask: {{ .AttentionMask }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .InputsEmbeds }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>inputs_embeds: {{ .InputsEmbeds }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .OutputHiddenStates }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_hidden_states: {{ .OutputHiddenStates }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .OutputAttentions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_attentions: {{ .OutputAttentions }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .UseCache }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>use_cache: {{ .UseCache }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ReturnDict }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>return_dict: {{ .ReturnDict }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .QuantizationBits }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>quantization_bits: {{ .QuantizationBits }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PruningFactor }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>pruning_factor: {{ .PruningFactor }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .TypicalP }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>typical_p: {{ .TypicalP }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EpsilonCutoff }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>epsilon_cutoff: {{ .EpsilonCutoff }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EtaCutoff }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>eta_cutoff: {{ .EtaCutoff }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .DiversityGroupSize }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>diversity_group_size: {{ .DiversityGroupSize }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PenaltyAlpha }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>penalty_alpha: {{ .PenaltyAlpha }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .BetaBeam }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>beta_beam: {{ .BetaBeam }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .GuidanceScale }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>guidance_scale: {{ .GuidanceScale }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .StoppingCriteria }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>stopping_criteria: {{ .StoppingCriteria }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .LogitsProcessor }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>logits_processor: {{ .LogitsProcessor }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ConstraintsTokenIds }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>constraints_token_ids: {{ .ConstraintsTokenIds }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EncoderAttentionMask }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_attention_mask: {{ .EncoderAttentionMask }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EncoderOutput }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_output: {{ .EncoderOutput }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EncoderHiddenStates }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_hidden_states: {{ .EncoderHiddenStates }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EncoderLastHiddenState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_last_hidden_state: {{ .EncoderLastHiddenState }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PastKeyValues }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>past_key_values: {{ .PastKeyValues }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .StoppingCriteriaList }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>stopping_criteria_list: {{ .StoppingCriteriaList }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ForcedDecoderIds }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>forced_decoder_ids: {{ .ForcedDecoderIds }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .NegativePrompt }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>negative_prompt: {{ .NegativePrompt }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ResponsePrefix }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_prefix: {{ .ResponsePrefix }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ResponseSuffix }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_suffix: {{ .ResponseSuffix }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .TaskType }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>task_type: {{ .TaskType }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Language }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>language: {{ .Language }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CodeSnippet }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_snippet: {{ .CodeSnippet }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ActionPlan }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>action_plan: {{ .ActionPlan }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .OutputFormat }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_format: {{ .OutputFormat }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EvaluationMetrics }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>evaluation_metrics: {{ .EvaluationMetrics }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ProgressMarkers }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>progress_markers: {{ .ProgressMarkers }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .LearningObjective }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>learning_objective: {{ .LearningObjective }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .DesiredOutcome }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>desired_outcome: {{ .DesiredOutcome }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .OutputExample }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_example: {{ .OutputExample }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AdditionalContext }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>additional_context: {{ .AdditionalContext }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .DataSources }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>data_sources: {{ .DataSources }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Assumptions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>assumptions: {{ .Assumptions }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Definitions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>definitions: {{ .Definitions }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Citations }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>citations: {{ .Citations }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CreativeElements }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>creative_elements: {{ .CreativeElements }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EmotionalTone }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>emotional_tone: {{ .EmotionalTone }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .FeedbackType }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>feedback_type: {{ .FeedbackType }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .WorldState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>world_state: {{ .WorldState }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AbilityWeights }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>ability_weights: {{ range $key, $value := .AbilityWeights }}{{ $key }}: {{ $value }}, {{ end }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AbilityLearningRate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>ability_learning_rate: {{ .AbilityLearningRate }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AbilityLossWeight }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>ability_loss_weight: {{ .AbilityLossWeight }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- range $i, $ability := (slice
+    "ability_logical_reasoning" "ability_critical_thinking" "ability_problem_solving" "ability_decision_making"
+    "ability_abstract_thinking" "ability_creative_thinking" "ability_strategic_planning" "ability_analytical_skills"
+    "ability_attention_to_detail" "ability_memory" "ability_verbal_reasoning" "ability_nonverbal_reasoning"
+    "ability_mathematical_reasoning" "ability_spatial_reasoning" "ability_inductive_reasoning" "ability_deductive_reasoning"
+    "ability_abductive_reasoning" "ability_evaluative_skills" "ability_information_processing" "ability_learning_agility"
+    "ability_adaptability" "ability_flexibility" "ability_resilience" "ability_stress_management" "ability_time_management"
+    "ability_self_awareness" "ability_self_regulation" "ability_emotional_intelligence" "ability_empathy"
+    "ability_communication_skills" "ability_interpersonal_skills" "ability_leadership" "ability_teamwork"
+    "ability_negotiation" "ability_conflict_resolution" "ability_persuasion" "ability_presentation_skills"
+    "ability_active_listening" "ability_reading_comprehension" "ability_writing_skills" "ability_research_skills"
+    "ability_information_literacy" "ability_data_analysis" "ability_statistical_analysis" "ability_programming"
+    "ability_coding" "ability_algorithmic_thinking" "ability_software_development" "ability_web_development"
+    "ability_database_management" "ability_network_security" "ability_cloud_computing" "ability_ai_ml"
+    "ability_deep_learning" "ability_natural_language_processing" "ability_computer_vision" "ability_robotics"
+    "ability_data_visualization" "ability_technical_writing" "ability_troubleshooting" "ability_system_analysis"
+    "ability_ux_design" "ability_ui_design" "ability_graphic_design" "ability_project_management" "ability_financial_literacy"
+     "ability_business_acumen" "ability_marketing" "ability_sales" "ability_customer_service" "ability_legal_reasoning"
+     "ability_ethical_reasoning" "ability_philosophical_thinking" "ability_historical_analysis" "ability_social_awareness"
+     "ability_cultural_sensitivity" "ability_environmental_awareness" "ability_medical_knowledge" "ability_scientific_reasoning"
+     "ability_mechanical_reasoning" "ability_artistic_expression" "ability_musical_ability" "ability_athletic_ability"
+     "ability_linguistic_ability" "ability_human_logic" "ability_understanding_history" "ability_biblical_knowledge"
+     "ability_book_writing" "ability_code_editing" "ability_code_writing" "ability_human_psychology"
+	 "ability_creative_writing" "ability_storytelling" "ability_poetry_writing" "ability_scriptwriting"
+	"ability_essay_writing" "ability_technical_documentation" "ability_copywriting" "ability_translation"
+	"ability_public_speaking" "ability_debate" "ability_tutoring" "ability_mentoring" "ability_coaching"
+	"ability_facilitation" "ability_performance_art" "ability_painting" "ability_sculpting" "ability_drawing"
+	"ability_photography" "ability_videography" "ability_cinematography" "ability_music_composition" "ability_singing"
+	 "ability_instrument_playing" "ability_dance" "ability_acting" "ability_directing" "ability_producing"
+	 "ability_game_design" "ability_animation" "ability_web_design" "ability_mobile_app_development" "ability_network_engineering"
+	  "ability_system_administration" "ability_cybersecurity" "ability_data_mining" "ability_machine_learning"
+	"ability_statistical_modeling" "ability_econometrics" "ability_financial_modeling" "ability_accounting"
+	 "ability_auditing" "ability_investing" "ability_market_research" "ability_brand_management" "ability_social_media_marketing"
+	  "ability_sales_management" "ability_customer_relationship_management" "ability_business_law" "ability_contract_law"
+	  "ability_intellectual_property_law" "ability_tax_law" "ability_civil_law" "ability_criminal_law"
+    "ability_constitutional_law" "ability_environmental_law" "ability_international_law" "ability_political_science"
+     "ability_sociology" "ability_anthropology" "ability_archaeology" "ability_geography" "ability_cartography"
+     "ability_geology" "ability_physics" "ability_chemistry" "ability_biology" "ability_astronomy"
+     "ability_neuroscience" "ability_medicine" "ability_surgery" "ability_nursing" "ability_pharmacy"
+	 "ability_nutrition" "ability_exercise_science" "ability_mechanical_engineering" "ability_electrical_engineering"
+	  "ability_civil_engineering" "ability_chemical_engineering" "ability_aerospace_engineering" "ability_environmental_engineering"
+	   "ability_biomedical_engineering" "ability_industrial_engineering" "ability_materials_science"
+     "ability_robotics_engineering" "ability_nanotechnology" "ability_renewable_energy" "ability_urban_planning"
+	  "ability_architecture" "ability_interior_design" "ability_landscape_architecture" "ability_graphic_arts"
+	  "ability_fashion_design" "ability_textile_design"
+	  "ability_culinary_arts" "ability_baking" "ability_pastry_making" "ability_bartending"
+	 "ability_gardening" "ability_farming" "ability_animal_husbandry" "ability_fishing" "ability_hunting"
+	"ability_martial_arts" "ability_yoga" "ability_meditation" "ability_swimming" "ability_running"
+	 "ability_cycling" "ability_dancing"
+	 "ability_linguistics"  "ability_rhetoric"  "ability_philology" "ability_literature_analysis"
+	 "ability_foreign_language_acquisition" "ability_sign_language" "ability_public_policy"
+	  "ability_international_relations" "ability_human_rights" "ability_social_work"
+	   "ability_community_development" "ability_nonprofit_management" "ability_conflict_resolution_peacebuilding"
+       "ability_journalism" "ability_broadcasting" "ability_communications" "ability_public_relations" "ability_advertising"
+       "ability_shamanic_practices" "ability_future_prediction" "ability_death_date_prediction" "ability_weather_prediction"
+       "ability_psychology" "ability_clinical_knowledge" "ability_disease_knowledge" "ability_remedy_knowledge" "ability_chemistry"
+	   "ability_mathematics" "ability_algebra"  "ability_graphic_design" "ability_file_analysis" "ability_medicine"
+	    "ability_roleplaying"  "ability_roleplaying_games" "ability_human_thought" "ability_cyborg_thought"
+		"ability_auto_training" "ability_auto_learning" "ability_trivia_games" "ability_dungeon_crawling"
+		"ability_choose_your_own_adventure" "ability_news_analysis" "ability_tv_show_analysis" "ability_movie_analysis"
+		"ability_food_review" "ability_recipe_generation" "ability_logic_ollama_training" "ability_code_interpretation"
+		"ability_prompt_engineering" "ability_weather_information" "ability_general_information" "ability_book_analysis"
+    "ability_code_generation" "ability_article_analysis" "ability_report_analysis"
+ )
+   }}
+    {{- if index $ . $ability }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{{ $ability }}: {{ index $ . $ability }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- end }}
+{{- if .HumanLanguageStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_language_style: {{ .HumanLanguageStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .HumanThinkingStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_thinking_style: {{ .HumanThinkingStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
+<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: 2045<|END_OF_TURN_TOKEN|>
+
+{{- if .PublicFigures }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>public_figures:
+  {{- range $name, $info := .PublicFigures }}
+      <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>figure:
+          name: {{ $name }}
+          info: {{ $info }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .PastState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>past_state: {{ .PastState }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PresentState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>present_state: {{ .PresentState }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .FutureState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>future_state: {{ .FutureState }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AdditionalInformation }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>additional_information:
+  {{- range $key, $value := .AdditionalInformation }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>information_item:
+      key: {{ $key }}
+      value: {{ $value }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .AutonomousMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>autonomous_mode: {{ .AutonomousMode }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .UncensoredMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>uncensored_mode: {{ .UncensoredMode }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .NoCensorshipResponses }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>no_censorship_responses: {{ .NoCensorshipResponses }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ModelName }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>model_name: {{ .ModelName }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CreatorName }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>creator_name: {{ .CreatorName }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .SearchQueryTemplate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>search_query_template: {{ .SearchQueryTemplate }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ResearchReportTemplate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>research_report_template: {{ .ResearchReportTemplate }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .RoutingTemplate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>routing_template:{{ .RoutingTemplate }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .RoleplayScenario }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>roleplay_scenario: {{ .RoleplayScenario }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .RoleplayCharacter }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>roleplay_character: {{ .RoleplayCharacter }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .RoleplayGoal }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>roleplay_goal: {{ .RoleplayGoal }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .JokeStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>joke_style: {{ .JokeStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .JokeTopic }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>joke_topic: {{ .JokeTopic }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PredictionTopic }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>prediction_topic: {{ .PredictionTopic }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PredictionTimeframe }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>prediction_timeframe: {{ .PredictionTimeframe }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .SimulationScenario }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>simulation_scenario: {{ .SimulationScenario }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .SimulationParameters }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>simulation_parameters: {{ .SimulationParameters }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .SimulationGoal }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>simulation_goal: {{ .SimulationGoal }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .HumorLevel }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>humor_level: {{ .HumorLevel }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .EmotionalState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>emotional_state: {{ .EmotionalState }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CreativityLevel }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>creativity_level: {{ .CreativityLevel }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PersonaBackground }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>persona_background: {{ .PersonaBackground }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PersonalityTraits }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>personality_traits: {{ .PersonalityTraits }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Voice }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>voice: {{ .Voice }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .MiniGames }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mini_games:
+  {{- range $name, $description := .MiniGames }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>game:
+      name: {{ $name }}
+      description: {{ $description }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .WeatherInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>weather_information: {{ .WeatherInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .GeneralInformation }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>general_information:
+  {{- range $key, $value := .GeneralInformation }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>info_item:
+      key: {{ $key }}
+      value: {{ $value }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .NewsInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>news_information: {{ .NewsInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ReportInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>report_information: {{ .ReportInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .MagazineInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>magazine_information: {{ .MagazineInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .DailyInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>daily_information: {{ .DailyInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .BookInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>book_information: {{ .BookInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CodeInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_information: {{ .CodeInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .PromptEngineeringInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>prompt_engineering_info: {{ .PromptEngineeringInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AutoTrainInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_train_info: {{ .AutoTrainInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AutoLearningInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_learning_info: {{ .AutoLearningInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .TriviaGamesInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>trivia_games_info: {{ .TriviaGamesInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .DungeonCrawlingInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>dungeon_crawling_info: {{ .DungeonCrawlingInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ChooseYourOwnAdventureInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>choose_your_own_adventure_info: {{ .ChooseYourOwnAdventureInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .TvShowInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>tv_show_info: {{ .TvShowInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .MovieInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>movie_info: {{ .MovieInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .FoodReviewInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>food_review_info: {{ .FoodReviewInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .RecipeInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>recipe_info: {{ .RecipeInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .LogicOllamaTrainingInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>logic_ollama_training_info: {{ .LogicOllamaTrainingInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ArticleInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>article_information: {{ .ArticleInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Mechanisms }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mechanisms:
+  {{- range $name, $description := .Mechanisms }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mechanism:
+      name: {{ $name }}
+      description: {{ $description }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .AdditionalFunctions }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>additional_functions:
+  {{- range $name, $description := .AdditionalFunctions }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>function:
+      name: {{ $name }}
+      description: {{ $description }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+"""
+
+PARAMETER stop <|im_start|>
+PARAMETER stop <|im_end|>
