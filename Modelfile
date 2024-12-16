@@ -128,6 +128,8 @@ TEMPLATE """
 {{- if .AutonomousMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>autonomous_mode: {{ .AutonomousMode }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .HumanLanguageStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_language_style: {{ .HumanLanguageStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .HumanThinkingStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_thinking_style: {{ .HumanThinkingStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AutoTrainInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_train_info: {{ .AutoTrainInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AutoLearningInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_learning_info: {{ .AutoLearningInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
 """
 
 PARAMETER stop <|im_start|>
