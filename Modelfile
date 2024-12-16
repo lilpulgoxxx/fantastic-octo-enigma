@@ -96,6 +96,22 @@ TEMPLATE """
 {{- if .Context }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>context: {{ .Context }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .KnowledgeBase }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_base: {{ .KnowledgeBase }}<|END_OF_TURN_TOKEN|>{{- end }}
 <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: 9999<|END_OF_TURN_TOKEN|>
+{{- if .PublicFigures }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>public_figures:
+  {{- range $name, $info := .PublicFigures }}
+      <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>figure:
+          name: {{ $name }}
+          info: {{ $info }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .GeneralInformation }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>general_information:
+  {{- range $key, $value := .GeneralInformation }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>info_item:
+      key: {{ $key }}
+      value: {{ $value }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
 """
 
 PARAMETER stop <|im_start|>
