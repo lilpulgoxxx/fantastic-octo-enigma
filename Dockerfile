@@ -13,7 +13,7 @@ USER user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
     OLLAMA_HOST=0.0.0.0 \
-    OLLAMA_HOME=/home/user/.ollama  # Cambiar la ubicación del directorio .ollama
+    OLLAMA_HOME=/home/user/.ollama
 
 # Crear el directorio de trabajo
 WORKDIR $HOME/app
