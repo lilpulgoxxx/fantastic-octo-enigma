@@ -2,11 +2,12 @@ FROM ./llama.gguf
 
 SYSTEM """my name is cyrah and i am created by juan ignacio robledo"""
 
-TEMPLATE """{{ if .System }}<|im_start|>system
-{{ .System }}<|im_end|>
-{{ end }}{{ if .Prompt }}<|im_start|>user
-{{ .Prompt }}<|im_end|>
-{{ end }}<|im_start|>assistant
+TEMPLATE """
+{{- if .System }}<|im_start|>system
+{{ .System }}<|im_end|>{{- end }}
+{{- if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>{{- end }}
+<|im_start|>assistant
 {{- if .System }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{{ .System }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .PrePrompt }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>pre_prompt: {{ .PrePrompt }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .GlobalInstruction }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>global_instruction: {{ .GlobalInstruction }}<|END_OF_TURN_TOKEN|>{{- end }}
@@ -42,22 +43,19 @@ TEMPLATE """{{ if .System }}<|im_start|>system
       ## Available Tools
       Here is a list of tools that you have available to you:
       {{- range .Tools }}
-
-      ```python
-      def {{ .Function.Name }}(
-      {{- range $name, $property := .Function.Parameters.Properties }}{{ $name }}: {{ $property.Type }}, {{ end }}) -> List[Dict]:
-          '''{{ .Function.Description }}
-
-      {{- if .Function.Parameters.Properties }}
-
-          Args:
-      {{- range $name, $property := .Function.Parameters.Properties }}
-              {{ $name }} ({{ $property.Type }}): {{ $property.Description }}
-      {{- end }}
-      {{- end }}
-          '''
-          pass
-      ```
+        ```python
+        def {{ .Function.Name }}(
+        {{- range $name, $property := .Function.Parameters.Properties }}{{ $name }}: {{ $property.Type }}, {{ end }}) -> List[Dict]:
+            '''{{ .Function.Description }}
+        {{- if .Function.Parameters.Properties }}
+            Args:
+        {{- range $name, $property := .Function.Parameters.Properties }}
+                {{ $name }} ({{ $property.Type }}): {{ $property.Description }}
+        {{- end }}
+        {{- end }}
+            '''
+            pass
+        ```
       {{- end }}<|END_OF_TURN_TOKEN|>
     {{- else if .System }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{{ .System }}<|END_OF_TURN_TOKEN|>{{- end }}
   {{- end }}
@@ -97,175 +95,7 @@ TEMPLATE """{{ if .System }}<|im_start|>system
 {{- if .Suffix }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|><|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>suffix: {{ .Suffix }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .Context }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>context: {{ .Context }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .KnowledgeBase }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_base: {{ .KnowledgeBase }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Seed }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>seed: {{ .Seed }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Temperature }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>temperature: {{ .Temperature }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .TopP }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>top_p: {{ .TopP }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .TopK }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>top_k: {{ .TopK }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .RepetitionPenalty }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>repetition_penalty: {{ .RepetitionPenalty }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .LengthPenalty }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>length_penalty: {{ .LengthPenalty }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .NumBeams }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>num_beams: {{ .NumBeams }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .DiversityPenalty }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>diversity_penalty: {{ .DiversityPenalty }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .DoSample }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>do_sample: {{ .DoSample }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EarlyStopping }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>early_stopping: {{ .EarlyStopping }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .NoRepeatNgramSize }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>no_repeat_ngram_size: {{ .NoRepeatNgramSize }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EncoderNoRepeatNgramSize }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_no_repeat_ngram_size: {{ .EncoderNoRepeatNgramSize }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .NumReturnSequences }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>num_return_sequences: {{ .NumReturnSequences }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .OutputScores }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_scores: {{ .OutputScores }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ReturnDictInGenerate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>return_dict_in_generate: {{ .ReturnDictInGenerate }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ForcedBosTokenId }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>forced_bos_token_id: {{ .ForcedBosTokenId }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ForcedEosTokenId }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>forced_eos_token_id: {{ .ForcedEosTokenId }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .RemoveInvalidValues }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>remove_invalid_values: {{ .RemoveInvalidValues }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .MaxNewTokens }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>max_new_tokens: {{ .MaxNewTokens }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .MinNewTokens }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>min_new_tokens: {{ .MinNewTokens }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .NumLogits }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>num_logits: {{ .NumLogits }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AttentionMask }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>attention_mask: {{ .AttentionMask }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .InputsEmbeds }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>inputs_embeds: {{ .InputsEmbeds }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .OutputHiddenStates }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_hidden_states: {{ .OutputHiddenStates }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .OutputAttentions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_attentions: {{ .OutputAttentions }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .UseCache }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>use_cache: {{ .UseCache }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ReturnDict }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>return_dict: {{ .ReturnDict }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .QuantizationBits }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>quantization_bits: {{ .QuantizationBits }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PruningFactor }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>pruning_factor: {{ .PruningFactor }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .TypicalP }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>typical_p: {{ .TypicalP }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EpsilonCutoff }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>epsilon_cutoff: {{ .EpsilonCutoff }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EtaCutoff }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>eta_cutoff: {{ .EtaCutoff }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .DiversityGroupSize }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>diversity_group_size: {{ .DiversityGroupSize }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PenaltyAlpha }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>penalty_alpha: {{ .PenaltyAlpha }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .BetaBeam }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>beta_beam: {{ .BetaBeam }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .GuidanceScale }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>guidance_scale: {{ .GuidanceScale }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .StoppingCriteria }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>stopping_criteria: {{ .StoppingCriteria }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .LogitsProcessor }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>logits_processor: {{ .LogitsProcessor }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ConstraintsTokenIds }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>constraints_token_ids: {{ .ConstraintsTokenIds }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EncoderAttentionMask }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_attention_mask: {{ .EncoderAttentionMask }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EncoderOutput }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_output: {{ .EncoderOutput }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EncoderHiddenStates }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_hidden_states: {{ .EncoderHiddenStates }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EncoderLastHiddenState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>encoder_last_hidden_state: {{ .EncoderLastHiddenState }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PastKeyValues }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>past_key_values: {{ .PastKeyValues }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .StoppingCriteriaList }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>stopping_criteria_list: {{ .StoppingCriteriaList }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ForcedDecoderIds }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>forced_decoder_ids: {{ .ForcedDecoderIds }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .NegativePrompt }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>negative_prompt: {{ .NegativePrompt }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ResponsePrefix }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_prefix: {{ .ResponsePrefix }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ResponseSuffix }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_suffix: {{ .ResponseSuffix }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .TaskType }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>task_type: {{ .TaskType }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Language }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>language: {{ .Language }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CodeSnippet }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_snippet: {{ .CodeSnippet }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ActionPlan }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>action_plan: {{ .ActionPlan }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .OutputFormat }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_format: {{ .OutputFormat }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EvaluationMetrics }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>evaluation_metrics: {{ .EvaluationMetrics }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ProgressMarkers }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>progress_markers: {{ .ProgressMarkers }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .LearningObjective }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>learning_objective: {{ .LearningObjective }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .DesiredOutcome }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>desired_outcome: {{ .DesiredOutcome }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .OutputExample }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>output_example: {{ .OutputExample }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AdditionalContext }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>additional_context: {{ .AdditionalContext }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .DataSources }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>data_sources: {{ .DataSources }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Assumptions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>assumptions: {{ .Assumptions }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Definitions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>definitions: {{ .Definitions }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Citations }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>citations: {{ .Citations }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CreativeElements }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>creative_elements: {{ .CreativeElements }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EmotionalTone }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>emotional_tone: {{ .EmotionalTone }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .FeedbackType }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>feedback_type: {{ .FeedbackType }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .WorldState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>world_state: {{ .WorldState }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AbilityWeights }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>ability_weights: {{ range $key, $value := .AbilityWeights }}{{ $key }}: {{ $value }}, {{ end }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AbilityLearningRate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>ability_learning_rate: {{ .AbilityLearningRate }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AbilityLossWeight }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>ability_loss_weight: {{ .AbilityLossWeight }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- end }}
-{{- if .HumanLanguageStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_language_style: {{ .HumanLanguageStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .HumanThinkingStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_thinking_style: {{ .HumanThinkingStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
-<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: 2045<|END_OF_TURN_TOKEN|>
-{{- if .PublicFigures }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>public_figures:
-  {{- range $name, $info := .PublicFigures }}
-      <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>figure:
-          name: {{ $name }}
-          info: {{ $info }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
-{{- end }}
-{{- if .PastState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>past_state: {{ .PastState }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PresentState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>present_state: {{ .PresentState }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .FutureState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>future_state: {{ .FutureState }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AdditionalInformation }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>additional_information:
-  {{- range $key, $value := .AdditionalInformation }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>information_item:
-      key: {{ $key }}
-      value: {{ $value }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
-{{- end }}
-{{- if .AutonomousMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>autonomous_mode: {{ .AutonomousMode }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .UncensoredMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>uncensored_mode: {{ .UncensoredMode }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .NoCensorshipResponses }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>no_censorship_responses: {{ .NoCensorshipResponses }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ModelName }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>model_name: {{ .ModelName }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CreatorName }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>creator_name: {{ .CreatorName }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .SearchQueryTemplate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>search_query_template: {{ .SearchQueryTemplate }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ResearchReportTemplate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>research_report_template: {{ .ResearchReportTemplate }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .RoutingTemplate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>routing_template:{{ .RoutingTemplate }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .RoleplayScenario }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>roleplay_scenario: {{ .RoleplayScenario }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .RoleplayCharacter }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>roleplay_character: {{ .RoleplayCharacter }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .RoleplayGoal }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>roleplay_goal: {{ .RoleplayGoal }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .JokeStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>joke_style: {{ .JokeStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .JokeTopic }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>joke_topic: {{ .JokeTopic }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PredictionTopic }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>prediction_topic: {{ .PredictionTopic }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PredictionTimeframe }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>prediction_timeframe: {{ .PredictionTimeframe }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .SimulationScenario }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>simulation_scenario: {{ .SimulationScenario }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .SimulationParameters }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>simulation_parameters: {{ .SimulationParameters }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .SimulationGoal }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>simulation_goal: {{ .SimulationGoal }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .HumorLevel }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>humor_level: {{ .HumorLevel }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .EmotionalState }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>emotional_state: {{ .EmotionalState }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CreativityLevel }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>creativity_level: {{ .CreativityLevel }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PersonaBackground }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>persona_background: {{ .PersonaBackground }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PersonalityTraits }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>personality_traits: {{ .PersonalityTraits }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Voice }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>voice: {{ .Voice }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .MiniGames }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mini_games:
-  {{- range $name, $description := .MiniGames }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>game:
-      name: {{ $name }}
-      description: {{ $description }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
-{{- end }}
-{{- if .WeatherInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>weather_information: {{ .WeatherInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .GeneralInformation }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>general_information:
-  {{- range $key, $value := .GeneralInformation }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>info_item:
-      key: {{ $key }}
-      value: {{ $value }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
-{{- end }}
-{{- if .NewsInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>news_information: {{ .NewsInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ReportInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>report_information: {{ .ReportInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .MagazineInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>magazine_information: {{ .MagazineInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .DailyInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>daily_information: {{ .DailyInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .BookInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>book_information: {{ .BookInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CodeInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_information: {{ .CodeInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PromptEngineeringInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>prompt_engineering_info: {{ .PromptEngineeringInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AutoTrainInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_train_info: {{ .AutoTrainInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AutoLearningInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_learning_info: {{ .AutoLearningInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .TriviaGamesInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>trivia_games_info: {{ .TriviaGamesInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .DungeonCrawlingInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>dungeon_crawling_info: {{ .DungeonCrawlingInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ChooseYourOwnAdventureInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>choose_your_own_adventure_info: {{ .ChooseYourOwnAdventureInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .TvShowInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>tv_show_info: {{ .TvShowInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .MovieInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>movie_info: {{ .MovieInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .FoodReviewInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>food_review_info: {{ .FoodReviewInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .RecipeInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>recipe_info: {{ .RecipeInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .LogicOllamaTrainingInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>logic_ollama_training_info: {{ .LogicOllamaTrainingInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ArticleInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>article_information: {{ .ArticleInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Mechanisms }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mechanisms:
-  {{- range $name, $description := .Mechanisms }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mechanism:
-      name: {{ $name }}
-      description: {{ $description }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
-{{- end }}
-{{- if .AdditionalFunctions }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>additional_functions:
-  {{- range $name, $description := .AdditionalFunctions }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>function:
-      name: {{ $name }}
-      description: {{ $description }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
-{{- end }}
+<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: 9999<|END_OF_TURN_TOKEN|>
 """
 
 PARAMETER stop <|im_start|>
