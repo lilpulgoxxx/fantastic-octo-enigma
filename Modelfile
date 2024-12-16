@@ -172,7 +172,6 @@ TEMPLATE """{{ if .System }}<|im_start|>system
 {{- if .HumanLanguageStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_language_style: {{ .HumanLanguageStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .HumanThinkingStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_thinking_style: {{ .HumanThinkingStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
 <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: 2045<|END_OF_TURN_TOKEN|>
-
 {{- if .PublicFigures }}
   <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>public_figures:
   {{- range $name, $info := .PublicFigures }}
