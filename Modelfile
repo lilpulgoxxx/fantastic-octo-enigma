@@ -121,6 +121,13 @@ TEMPLATE """
       description: {{ $description }}<|END_OF_TURN_TOKEN|>
   {{- end }}<|END_OF_TURN_TOKEN|>
 {{- end }}
+{{- if .DungeonCrawlingInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>dungeon_crawling_info: {{ .DungeonCrawlingInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CardGamesInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>card_games_info: {{ .CardGamesInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .BlackJackInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>black_jack_info: {{ .BlackJackInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .TriviaGamesInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>trivia_games_info: {{ .TriviaGamesInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AutonomousMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>autonomous_mode: {{ .AutonomousMode }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .HumanLanguageStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_language_style: {{ .HumanLanguageStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .HumanThinkingStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_thinking_style: {{ .HumanThinkingStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
 """
 
 PARAMETER stop <|im_start|>
