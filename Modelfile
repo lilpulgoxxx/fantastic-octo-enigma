@@ -112,6 +112,15 @@ TEMPLATE """
       value: {{ $value }}<|END_OF_TURN_TOKEN|>
   {{- end }}<|END_OF_TURN_TOKEN|>
 {{- end }}
+{{- if .WebSearchInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>web_search_information: {{ .WebSearchInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .MiniGames }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mini_games:
+  {{- range $name, $description := .MiniGames }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>game:
+      name: {{ $name }}
+      description: {{ $description }}<|END_OF_TURN_TOKEN|>
+  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
 """
 
 PARAMETER stop <|im_start|>
