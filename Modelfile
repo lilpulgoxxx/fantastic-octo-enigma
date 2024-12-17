@@ -86,29 +86,17 @@ TEMPLATE """
 {{- if .Logic }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>logic: {{ .Logic }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .DateTimeInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>date_time_info: {{ .DateTimeInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .CurrentDate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>current_date: {{ .CurrentDate }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Location }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>location_information:
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>latitude: {{ .Location.latitude }}<|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>longitude: {{ .Location.longitude }}<|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>city: {{ .Location.city }}<|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>state: {{ .Location.state }}<|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>country: {{ .Location.country }}<|END_OF_TURN_TOKEN|>
-    {{- if .Location.address }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>address: {{ .Location.address }}<|END_OF_TURN_TOKEN|>{{- end }}
-    {{- if .Location.postalCode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>postal_code: {{ .Location.postalCode }}<|END_OF_TURN_TOKEN|>{{- end }}
-    {{- if .Location.timeZone }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>time_zone: {{ .Location.timeZone }}<|END_OF_TURN_TOKEN|>{{- end }}
-  <|END_OF_TURN_TOKEN|>
-{{- end }}
 {{- if .Prompt }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|>{{- end }}
 <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
 {{- if .Response }}
     {{ .Response }}
-  <|END_OF_TURN_TOKEN|>
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>final_response<|END_OF_TURN_TOKEN|>
+    <|END_OF_TURN_TOKEN|> 
 {{- else if .Messages }}
   {{- range .Messages }}
     {{- if eq .Role "system" }}
       {{- continue }}
-    {{- end }}<|START_OF_TURN_TOKEN|>
+    {{- end }}
+    <|START_OF_TURN_TOKEN|>
     {{- if eq .Role "user" }}<|USER_TOKEN|>{{ .Content }}
     {{- else if eq .Role "assistant" }}<|CHATBOT_TOKEN|>{{ .Content }}
     {{- else if eq .Role "tool" }}<|SYSTEM_TOKEN|><results>
@@ -119,21 +107,18 @@ TEMPLATE """
   {{- if not .Response }}
     <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_type:
         {{- if .UncensoredMode }}uncensored_response{{- else }}normal_response{{- end }}<|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_id: {{ uuidv4 }}<|END_OF_TURN_TOKEN|>
     <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
-  <|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>final_response<|END_OF_TURN_TOKEN|>
+     <|END_OF_TURN_TOKEN|>
   {{- end }}
 {{- else }}
     <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_type:
         {{- if .UncensoredMode }}uncensored_response{{- else }}normal_response{{- end }}<|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_id: {{ uuidv4 }}<|END_OF_TURN_TOKEN|>
     <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
-    <|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>final_response<|END_OF_TURN_TOKEN|>
+     <|END_OF_TURN_TOKEN|>
 {{- end }}
 <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: {{ or .KnowledgeDate "9999" }}<|END_OF_TURN_TOKEN|>
 """
 
 PARAMETER stop <|im_start|>
 PARAMETER stop <|im_end|>
+PARAMETER stop <|END_OF_TURN_TOKEN|>
