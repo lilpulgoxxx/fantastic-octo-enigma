@@ -88,20 +88,35 @@ TEMPLATE """
 {{- if .CurrentDate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>current_date: {{ .CurrentDate }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .Prompt }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|>{{- end }}
 <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
-{{- if .Response }}{{ .Response }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Messages }}
+{{- if .Response }}
+    {{ .Response }}
+{{- else if .Messages }}
   {{- range .Messages }}
     {{- if eq .Role "system" }}
       {{- continue }}
     {{- end }}<|START_OF_TURN_TOKEN|>
     {{- if eq .Role "user" }}<|USER_TOKEN|>{{ .Content }}
-    {{- else if eq .Role "assistant" }}<|CHATBOT_TOKEN|>{{ .Content }}<|END_OF_TURN_TOKEN|>
+    {{- else if eq .Role "assistant" }}<|CHATBOT_TOKEN|>{{ .Content }}
     {{- else if eq .Role "tool" }}<|SYSTEM_TOKEN|><results>
     console_output: {{ .Content }}
-    </results><|END_OF_TURN_TOKEN|>
+    </results>
     {{- end }}
   {{- end }}
+  {{- if not .Response }}
+    {{- if .UncensoredMode }}
+        Uncensored Response
+    {{- else }}
+        Normal Response
+    {{- end }}
+  {{- end }}
+{{- else }}
+   {{- if .UncensoredMode }}
+        Uncensored Response
+    {{- else }}
+        Normal Response
+    {{- end }}
 {{- end }}
+<|END_OF_TURN_TOKEN|>
 <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: {{ or .KnowledgeDate "9999" }}<|END_OF_TURN_TOKEN|>
 """
 
