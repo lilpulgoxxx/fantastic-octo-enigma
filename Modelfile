@@ -1,7 +1,5 @@
 FROM ./llama.gguf
 
-SYSTEM """my name is cyrah and i am created by juan ignacio robledo"""
-
 TEMPLATE """
 {{- if .System }}<|im_start|>system
 {{ .System }}<|im_end|>{{- end }}
