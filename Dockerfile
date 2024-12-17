@@ -22,3 +22,7 @@ RUN curl -fsSL https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored
 
 # Exponer el puerto
 EXPOSE 7860
+
+#EXECUTE OLLAMA
+
+RUN ollama serve & sleep 5 && ollama create llama -f Modelfile
