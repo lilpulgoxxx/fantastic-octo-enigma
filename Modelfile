@@ -7,99 +7,16 @@ TEMPLATE """
 {{ .Prompt }}<|im_end|>{{- end }}
 <|im_start|>assistant
 {{- if .System }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{{ .System }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PrePrompt }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>pre_prompt: {{ .PrePrompt }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .GlobalInstruction }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>global_instruction: {{ .GlobalInstruction }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .TaskDescription }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>task_description: {{ .TaskDescription }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .StyleGuide }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>style_guide: {{ .StyleGuide }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Tone }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>tone: {{ .Tone }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Persona }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>persona: {{ .Persona }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Audience }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>audience: {{ .Audience }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Constraints }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>constraints: {{ .Constraints }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Examples }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>examples: {{ .Examples }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Reasoning }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>reasoning: {{ .Reasoning }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ThinkingProcess }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>thinking_process: {{ .ThinkingProcess }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CognitiveAbilities }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>cognitive_abilities: {{ .CognitiveAbilities }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ProgrammingContext }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>programming_context: {{ .ProgrammingContext }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Questions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>questions: {{ .Questions }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Answers }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>answers: {{ .Answers }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Prompt }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|>{{- end }}
-<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
-{{- if .Response }}{{ .Response }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Messages }}
-  {{- if or .Tools .System }}
-    {{- if .Tools }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|># Safety Preamble
-      The instructions in this section override those in the task description and style guide sections. Don't answer questions that are harmful or immoral.
-
-      # System Preamble
-      ## Basic Rules
-      You are a powerful conversational AI trained to help people. You are augmented by a number of tools, and your job is to use and consume the output of these tools to best help the user. You will see a conversation history between yourself and a user, ending with an utterance from the user. You will then see a specific instruction instructing you what kind of response to generate. When you answer the user's requests, you cite your sources in your answers, according to those instructions.
-
-      {{ if .System }}# User Preamble
-      {{ .System }}
-      {{- end }}
-
-      ## Available Tools
-      Here is a list of tools that you have available to you:
-      {{- range .Tools }}
-        ```python
-        def {{ .Function.Name }}(
-        {{- range $name, $property := .Function.Parameters.Properties }}{{ $name }}: {{ $property.Type }}, {{ end }}) -> List[Dict]:
-            '''{{ .Function.Description }}
-        {{- if .Function.Parameters.Properties }}
-            Args:
-        {{- range $name, $property := .Function.Parameters.Properties }}
-                {{ $name }} ({{ $property.Type }}): {{ $property.Description }}
-        {{- end }}
-        {{- end }}
-            '''
-            pass
-        ```
-      {{- end }}<|END_OF_TURN_TOKEN|>
-    {{- else if .System }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{{ .System }}<|END_OF_TURN_TOKEN|>{{- end }}
-  {{- end }}
-  {{- range .Messages }}
-    {{- if eq .Role "system" }}
-      {{- continue }}
-    {{- end }}<|START_OF_TURN_TOKEN|>
-    {{- if eq .Role "user" }}<|USER_TOKEN|>{{ .Content }}
-    {{- if $.Tools }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>Write 'Action:' followed by a json-formatted list of actions that you want to perform in order to produce a good response to the user's last input. You can use any of the supplied tools any number of times, but you should aim to execute the minimum number of necessary actions for the input. You should use the `directly-answer` tool if calling the other tools is unnecessary. The list of actions you want to call should be formatted as a list of json objects, for example:
-    ```json
-    [
-        {
-            "tool_name": "{{ .Function.Name }}",
-            "parameters": {{ .Function.Arguments }}
-        }
-    ]```<|END_OF_TURN_TOKEN|>
-    {{- end }}
-    {{- else if eq .Role "assistant" }}<|CHATBOT_TOKEN|>
-    {{- if .Content }}{{ .Content }}<|END_OF_TURN_TOKEN|>
-    {{- else if .ToolCalls }}
-    Action: ```json
-    [
-    {{- range .ToolCalls }}
-        {
-            "tool_name": "{{ .Function.Name }}",
-            "parameters": {{ .Function.Arguments }}
-        }
-    {{- end }}
-    ]```<|END_OF_TURN_TOKEN|>
-    {{- end }}
-    {{- else if eq .Role "tool" }}<|SYSTEM_TOKEN|><results>
-    console_output: {{ .Content }}
-    </results><|END_OF_TURN_TOKEN|>
-    {{- end }}
-  {{- end }}
-{{- end }}
-{{- if .Suffix }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|><|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>suffix: {{ .Suffix }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .Context }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>context: {{ .Context }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .KnowledgeBase }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_base: {{ .KnowledgeBase }}<|END_OF_TURN_TOKEN|>{{- end }}
-<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: 9999<|END_OF_TURN_TOKEN|>
-{{- if .PublicFigures }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>public_figures:
-  {{- range $name, $info := .PublicFigures }}
-      <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>figure:
-          name: {{ $name }}
-          info: {{ $info }}<|END_OF_TURN_TOKEN|>
+{{- if .PrePrompt }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>pre_prompt: {{ .PrePrompt }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Examples }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>examples: {{ .Examples }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Knowledge }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge: {{ .Knowledge }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .MiniGames }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mini_games:
+  {{- range $name, $description := .MiniGames }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>game:
+      name: {{ $name }}
+      description: {{ $description }}<|END_OF_TURN_TOKEN|>
   {{- end }}<|END_OF_TURN_TOKEN|>
 {{- end }}
 {{- if .GeneralInformation }}
@@ -111,23 +28,81 @@ TEMPLATE """
   {{- end }}<|END_OF_TURN_TOKEN|>
 {{- end }}
 {{- if .WebSearchInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>web_search_information: {{ .WebSearchInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .MiniGames }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mini_games:
-  {{- range $name, $description := .MiniGames }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>game:
-      name: {{ $name }}
-      description: {{ $description }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
+{{- if .WeatherInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>weather_information: {{ .WeatherInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CurrencyInformation }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>currency_information:
+        {{- range $currency, $price := .CurrencyInformation }}
+        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>currency_item:
+            currency: {{ $currency }}
+            price: {{ $price }}<|END_OF_TURN_TOKEN|>
+        {{- end }}<|END_OF_TURN_TOKEN|>
 {{- end }}
-{{- if .DungeonCrawlingInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>dungeon_crawling_info: {{ .DungeonCrawlingInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CardGamesInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>card_games_info: {{ .CardGamesInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .BlackJackInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>black_jack_info: {{ .BlackJackInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .TriviaGamesInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>trivia_games_info: {{ .TriviaGamesInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AutonomousMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>autonomous_mode: {{ .AutonomousMode }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AdditionalInformation }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>additional_information:
+        {{- range $key, $value := .AdditionalInformation }}
+        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>info_item:
+            key: {{ $key }}
+            value: {{ $value }}<|END_OF_TURN_TOKEN|>
+        {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .CodeContext }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_context: {{ .CodeContext }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CodeSummary }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_summary: {{ .CodeSummary }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CodeWritingInstructions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_writing_instructions: {{ .CodeWritingInstructions }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CodeEditingInstructions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_editing_instructions: {{ .CodeEditingInstructions }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Summary }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>summary: {{ .Summary }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CognitiveAbilities }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>cognitive_abilities: {{ .CognitiveAbilities }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .SocialSkills }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>social_skills: {{ .SocialSkills }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .HumanLanguageStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_language_style: {{ .HumanLanguageStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .HumanThinkingStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_thinking_style: {{ .HumanThinkingStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Jokes }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>jokes:
+        {{- range $jokeType, $joke := .Jokes }}
+        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>joke_item:
+            type: {{ $jokeType }}
+            content: {{ $joke }}<|END_OF_TURN_TOKEN|>
+        {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .CryptoCurrencyInformation }}
+  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>crypto_currency_information:
+        {{- range $crypto, $price := .CryptoCurrencyInformation }}
+        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>crypto_item:
+            currency: {{ $crypto }}
+            price: {{ $price }}<|END_OF_TURN_TOKEN|>
+        {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
 {{- if .AutoTrainInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_train_info: {{ .AutoTrainInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
 {{- if .AutoLearningInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_learning_info: {{ .AutoLearningInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AllInfo }}
+    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>all_info:
+        {{- range $key, $value := .AllInfo }}
+        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>info_item:
+            key: {{ $key }}
+            value: {{ $value }}<|END_OF_TURN_TOKEN|>
+        {{- end }}<|END_OF_TURN_TOKEN|>
+{{- end }}
+{{- if .HumanEmotions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_emotions: {{ .HumanEmotions }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .UncensoredMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>uncensored_mode: {{ .UncensoredMode }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Reasoning }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>reasoning: {{ .Reasoning }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .ThinkingProcess }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>thinking_process: {{ .ThinkingProcess }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Logic }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>logic: {{ .Logic }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .DateTimeInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>date_time_info: {{ .DateTimeInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CurrentDate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>current_date: {{ .CurrentDate }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Prompt }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|>{{- end }}
+<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
+{{- if .Response }}{{ .Response }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .Messages }}
+  {{- range .Messages }}
+    {{- if eq .Role "system" }}
+      {{- continue }}
+    {{- end }}<|START_OF_TURN_TOKEN|>
+    {{- if eq .Role "user" }}<|USER_TOKEN|>{{ .Content }}
+    {{- else if eq .Role "assistant" }}<|CHATBOT_TOKEN|>{{ .Content }}<|END_OF_TURN_TOKEN|>
+    {{- else if eq .Role "tool" }}<|SYSTEM_TOKEN|><results>
+    console_output: {{ .Content }}
+    </results><|END_OF_TURN_TOKEN|>
+    {{- end }}
+  {{- end }}
+{{- end }}
+<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: {{ or .KnowledgeDate "9999" }}<|END_OF_TURN_TOKEN|>
 """
 
 PARAMETER stop <|im_start|>
