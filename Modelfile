@@ -90,7 +90,7 @@ TEMPLATE """
 <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
 {{- if .Response }}
     {{ .Response }}
-    <|END_OF_TURN_TOKEN|> 
+    <|END_OF_TURN_TOKEN|>
 {{- else if .Messages }}
   {{- range .Messages }}
     {{- if eq .Role "system" }}
