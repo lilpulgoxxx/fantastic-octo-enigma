@@ -37,5 +37,4 @@ RUN ollama serve & \
     ollama create cohere -f Modelfile-cohere && \
     ollama create llama70b -f Modelfile-llama70b && \
     ollama create qwq -f Modelfile-qwq && \
-    ollama create llama1b -f Modelfile-llama1b && \
-    tail -f /dev/null
+    ollama create llama1b -f Modelfile-llama1b
