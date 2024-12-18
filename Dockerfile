@@ -9,7 +9,7 @@ ENV OLLAMA_PORT=7860
 USER root
 
 # Install curl and wget (more versatile for downloads)
-RUN apt-get update && apt-get install -y curl wget
+RUN apt-get update && apt-get install -y --no-install-recommends curl wget && rm -rf /var/lib/apt/lists/*
 
 # Create the working directory
 WORKDIR /app
