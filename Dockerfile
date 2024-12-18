@@ -30,11 +30,4 @@ RUN wget -q https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GG
 EXPOSE 7860
 
 # Start Ollama and create models
-RUN ollama serve & \
-    sleep 5 && \
-    ollama create llama -f Modelfile-llama && \
-    ollama create testing -f Modelfile-testing && \
-    ollama create cohere -f Modelfile-cohere && \
-    ollama create llama70b -f Modelfile-llama70b && \
-    ollama create qwq -f Modelfile-qwq && \
-    ollama create llama1b -f Modelfile-llama1b
+RUN ollama serve & sleep 5 && ollama create llama -f Modelfile-llama && ollama create testing -f Modelfile-testing && ollama create cohere -f Modelfile-cohere && ollama create llama70b -f Modelfile-llama70b && ollama create qwq -f Modelfile-qwq && ollama create llama1b -f Modelfile-llama1b
