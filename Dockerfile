@@ -26,7 +26,6 @@ RUN wget -q https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GG
     wget -q https://huggingface.co/tensorblock/llama-3.2-1B-spinquant-hf-GGUF/resolve/main/llama-3.2-1B-spinquant-hf-Q2_K.gguf -O llama1b.gguf & \
     wait
 
-
 # Expose the port
 EXPOSE 7860
 
