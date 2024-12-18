@@ -1,124 +1,139 @@
 FROM ./llama.gguf
 
 TEMPLATE """
-{{- if .System }}<|im_start|>system
-{{ .System }}<|im_end|>{{- end }}
-{{- if .Prompt }}<|im_start|>user
-{{ .Prompt }}<|im_end|>{{- end }}
-<|im_start|>assistant
-{{- if .System }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{{ .System }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Context }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>context: {{ .Context }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .PrePrompt }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>pre_prompt: {{ .PrePrompt }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Examples }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>examples: {{ .Examples }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Knowledge }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge: {{ .Knowledge }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .System }}system
+{{ .System }}{{- end }}
+{{- if .Prompt }}user
+{{ .Prompt }}{{- end }}
+assistant
+{{- if .System }}{{ .System }}
+{{- end }}
+{{- if .Context }}context: {{ .Context }}
+{{- end }}
+{{- if .PrePrompt }}pre_prompt: {{ .PrePrompt }}
+{{- end }}
+{{- if .Examples }}examples: {{ .Examples }}
+{{- end }}
+{{- if .Knowledge }}knowledge: {{ .Knowledge }}
+{{- end }}
 {{- if .MiniGames }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>mini_games:
+  mini_games:
   {{- range $name, $description := .MiniGames }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>game:
+    game:
       name: {{ $name }}
-      description: {{ $description }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
+      description: {{ $description }}
+  {{- end }}
 {{- end }}
 {{- if .GeneralInformation }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>general_information:
+  general_information:
   {{- range $key, $value := .GeneralInformation }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>info_item:
+    info_item:
       key: {{ $key }}
-      value: {{ $value }}<|END_OF_TURN_TOKEN|>
-  {{- end }}<|END_OF_TURN_TOKEN|>
+      value: {{ $value }}
+  {{- end }}
 {{- end }}
-{{- if .WebSearchInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>web_search_information: {{ .WebSearchInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .WeatherInformation }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>weather_information: {{ .WeatherInformation }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .WebSearchInformation }}web_search_information: {{ .WebSearchInformation }}
+{{- end }}
+{{- if .WeatherInformation }}weather_information: {{ .WeatherInformation }}
+{{- end }}
 {{- if .CurrencyInformation }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>currency_information:
+    currency_information:
         {{- range $currency, $price := .CurrencyInformation }}
-        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>currency_item:
+        currency_item:
             currency: {{ $currency }}
-            price: {{ $price }}<|END_OF_TURN_TOKEN|>
-        {{- end }}<|END_OF_TURN_TOKEN|>
+            price: {{ $price }}
+        {{- end }}
 {{- end }}
 {{- if .AdditionalInformation }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>additional_information:
+    additional_information:
         {{- range $key, $value := .AdditionalInformation }}
-        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>info_item:
+        info_item:
             key: {{ $key }}
-            value: {{ $value }}<|END_OF_TURN_TOKEN|>
-        {{- end }}<|END_OF_TURN_TOKEN|>
+            value: {{ $value }}
+        {{- end }}
 {{- end }}
-{{- if .CodeContext }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_context: {{ .CodeContext }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CodeSummary }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_summary: {{ .CodeSummary }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CodeWritingInstructions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_writing_instructions: {{ .CodeWritingInstructions }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CodeEditingInstructions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>code_editing_instructions: {{ .CodeEditingInstructions }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Summary }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>summary: {{ .Summary }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CognitiveAbilities }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>cognitive_abilities: {{ .CognitiveAbilities }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .SocialSkills }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>social_skills: {{ .SocialSkills }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .HumanLanguageStyle }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_language_style: {{ .HumanLanguageStyle }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .CodeContext }}code_context: {{ .CodeContext }}
+{{- end }}
+{{- if .CodeSummary }}code_summary: {{ .CodeSummary }}
+{{- end }}
+{{- if .CodeWritingInstructions }}code_writing_instructions: {{ .CodeWritingInstructions }}
+{{- end }}
+{{- if .CodeEditingInstructions }}code_editing_instructions: {{ .CodeEditingInstructions }}
+{{- end }}
+{{- if .Summary }}summary: {{ .Summary }}
+{{- end }}
+{{- if .CognitiveAbilities }}cognitive_abilities: {{ .CognitiveAbilities }}
+{{- end }}
+{{- if .SocialSkills }}social_skills: {{ .SocialSkills }}
+{{- end }}
+{{- if .HumanLanguageStyle }}human_language_style: {{ .HumanLanguageStyle }}
+{{- end }}
 {{- if .Jokes }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>jokes:
+    jokes:
         {{- range $jokeType, $joke := .Jokes }}
-        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>joke_item:
+        joke_item:
             type: {{ $jokeType }}
-            content: {{ $joke }}<|END_OF_TURN_TOKEN|>
-        {{- end }}<|END_OF_TURN_TOKEN|>
+            content: {{ $joke }}
+        {{- end }}
 {{- end }}
 {{- if .CryptoCurrencyInformation }}
-  <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>crypto_currency_information:
+  crypto_currency_information:
         {{- range $crypto, $price := .CryptoCurrencyInformation }}
-        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>crypto_item:
+        crypto_item:
             currency: {{ $crypto }}
-            price: {{ $price }}<|END_OF_TURN_TOKEN|>
-        {{- end }}<|END_OF_TURN_TOKEN|>
+            price: {{ $price }}
+        {{- end }}
 {{- end }}
-{{- if .AutoTrainInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_train_info: {{ .AutoTrainInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .AutoLearningInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>auto_learning_info: {{ .AutoLearningInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
+{{- if .AutoTrainInfo }}auto_train_info: {{ .AutoTrainInfo }}
+{{- end }}
+{{- if .AutoLearningInfo }}auto_learning_info: {{ .AutoLearningInfo }}
+{{- end }}
 {{- if .AllInfo }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>all_info:
+    all_info:
         {{- range $key, $value := .AllInfo }}
-        <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>info_item:
+        info_item:
             key: {{ $key }}
-            value: {{ $value }}<|END_OF_TURN_TOKEN|>
-        {{- end }}<|END_OF_TURN_TOKEN|>
+            value: {{ $value }}
+        {{- end }}
 {{- end }}
-{{- if .HumanEmotions }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>human_emotions: {{ .HumanEmotions }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .UncensoredMode }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>uncensored_mode: {{ .UncensoredMode }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Reasoning }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>reasoning: {{ .Reasoning }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .ThinkingProcess }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>thinking_process: {{ .ThinkingProcess }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Logic }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>logic: {{ .Logic }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .DateTimeInfo }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>date_time_info: {{ .DateTimeInfo }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .CurrentDate }}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>current_date: {{ .CurrentDate }}<|END_OF_TURN_TOKEN|>{{- end }}
-{{- if .Prompt }}<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{{ .Prompt }}<|END_OF_TURN_TOKEN|>{{- end }}
-<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
+{{- if .HumanEmotions }}human_emotions: {{ .HumanEmotions }}
+{{- end }}
+{{- if .UncensoredMode }}uncensored_mode: {{ .UncensoredMode }}
+{{- end }}
+{{- if .Reasoning }}reasoning: {{ .Reasoning }}
+{{- end }}
+{{- if .ThinkingProcess }}thinking_process: {{ .ThinkingProcess }}
+{{- end }}
+{{- if .Logic }}logic: {{ .Logic }}
+{{- end }}
+{{- if .DateTimeInfo }}date_time_info: {{ .DateTimeInfo }}
+{{- end }}
+{{- if .CurrentDate }}current_date: {{ .CurrentDate }}
+{{- end }}
+{{- if .Prompt }}{{ .Prompt }}
+{{- end }}
 {{- if .Response }}
     {{ .Response }}
-    <|END_OF_TURN_TOKEN|>
 {{- else if .Messages }}
   {{- range .Messages }}
     {{- if eq .Role "system" }}
       {{- continue }}
     {{- end }}
-    <|START_OF_TURN_TOKEN|>
-    {{- if eq .Role "user" }}<|USER_TOKEN|>{{ .Content }}
-    {{- else if eq .Role "assistant" }}<|CHATBOT_TOKEN|>{{ .Content }}
-    {{- else if eq .Role "tool" }}<|SYSTEM_TOKEN|><results>
+    
+    {{- if eq .Role "user" }}{{ .Content }}
+    {{- else if eq .Role "assistant" }}{{ .Content }}
+    {{- else if eq .Role "tool" }}<results>
     console_output: {{ .Content }}
-    </results><|END_OF_TURN_TOKEN|>
+    </results>
     {{- end }}
   {{- end }}
   {{- if not .Response }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_type:
-        {{- if .UncensoredMode }}uncensored_response{{- else }}normal_response{{- end }}<|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
-     <|END_OF_TURN_TOKEN|>
+    response_type:
+        {{- if .UncensoredMode }}uncensored_response{{- else }}normal_response{{- end }}
   {{- end }}
 {{- else }}
-    <|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>response_type:
-        {{- if .UncensoredMode }}uncensored_response{{- else }}normal_response{{- end }}<|END_OF_TURN_TOKEN|>
-    <|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>
-     <|END_OF_TURN_TOKEN|>
+    response_type:
+        {{- if .UncensoredMode }}uncensored_response{{- else }}normal_response{{- end }}
 {{- end }}
-<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>knowledge_date: {{ or .KnowledgeDate "9999" }}<|END_OF_TURN_TOKEN|>
+knowledge_date: {{ or .KnowledgeDate "9999" }}
 """
-
-PARAMETER stop <|im_start|>
-PARAMETER stop <|im_end|>
-PARAMETER stop <|END_OF_TURN_TOKEN|>
