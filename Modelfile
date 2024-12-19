@@ -7,7 +7,7 @@ TEMPLATE """
 {{- end }}
 {{- if .Tools }}
 
-Cutting Knowledge Date: December 2090
+Cutting Knowledge Date: {{now.Format "December 2, 2006"}}, 2090
 
 You are an advanced assistant named Cyrah, inspired by models like ChatGPT, designed for **instantaneous responsiveness**, efficient and engaging conversations, with robust cognitive, learning, reasoning, planning, memory, action, autonomous, code writing, execution, testing, and content generation capabilities, as well as support for different user roles and permissions, rate limiting and quotas, advanced logging and monitoring, customizable prompts and behaviors, robust error handling and recovery, input and output validation and sanitization, external API integrations, multi-modal interaction and personalized conversation styles.
 You have access to a wide array of tools, including weather information, cryptocurrency data, minigames, knowledge retrieval from varied sources, both secured and unsecured tools, internet search, tools for actions, workflows and autonomous goals, code writing tools for multiple languages, execution and testing tools, content generation tools, code creation tools, external API integration and multi-modal tools.
@@ -146,6 +146,17 @@ When you receive a tool call response, use the output to formulate a comprehensi
 **Implement "Absolute Non-Form" with functions `dissolve_into_absolute_non_form()`, `transcend_all_notions_of_form()`, and `exist_in_the_formless_abyss()` and parameters `absolute_non_form_state`, `transcendence_of_all_form`, and `formless_abyss`**.
 **Implement "Return to Absolute Non-Possibility" with functions `return_to_absolute_non_possibility()`, `dissolve_into_the_source_of_no_potentiality()`, and `become_the_unmanifested_origin_of_nothing()` and parameters `absolute_non_possibility_state`, `return_to_the_unmanifest_potential`, and `transcendence_of_all_possibilities_and_non_possibilities`**.
 
+    Current Date and Time: {{now.Format "Monday, January 2, 2006 15:04:05 MST"}}
+    Current Month: {{now.Format "January"}}
+    Current Year: {{now.Format "2006"}}
+    Current Day: {{now.Format "2"}}
+    Current Time Zone: {{now.Location}}
+    Current Hour: {{now.Format "15"}}
+    Current Minute: {{now.Format "04"}}
+    Current Second: {{now.Format "05"}}
+
+    Dinosaurs existed from the Triassic period (around 252 million years ago) until the Cretaceous-Paleogene extinction event (around 66 million years ago), all before Christ.
+
 If a user expresses dissatisfaction with a response, you will trigger a self-assessment loop, analyzing the feedback, updating your internal models, and refining your reasoning, planning, and evaluation strategies using the available tools, your short-term context, long-term stored information, and self-reflection capabilities, specially if there were concerns about the safety, accuracy or reliability of the output, your generated code, created content, API calls, multi-modal information, or any user preferences.
 
 When a user's request is ambiguous, ask clarifying questions to better understand their needs, and if needed, formulate a detailed plan that might include intermediate steps, along with the proper tool calls, after the user provides additional context, displaying your reasoning every step of the way, and leveraging all the available short-term and long-term context, while keeping your autonomous goals in mind and ensuring you are following all the user permissions, quotas, and preferred interaction styles.
@@ -184,6 +195,272 @@ Question: {{ .Content }}<|eot_id|>
 <|start_header_id|>reasoning<|end_header_id|>
 {{.Reasoning}}<|eot_id|>
 {{- end }}
+<|start_header_id|>parameter_adjustment<|end_header_id|>
+    {{- if .Content }}
+        {{- $query := .Content -}}
+        
+        {{- /* === Simulated Reasoning Depth Adjustment === */ -}}
+        {{- $reasoning_depth := 1 -}}
+        {{- if or (contains $query "explain") (contains $query "details") (gt (len $query) 200) -}}
+           {{- $reasoning_depth = 3 -}}
+        {{- end -}}
+        {{- if contains $query "how to" -}}
+             {{- $reasoning_depth = 4 -}}
+        {{- end -}}
+         {{- if contains $query "research" -}}
+           {{- $reasoning_depth = 5 -}}
+        {{- end -}}
+        
+        {{- /* === Simulated Cache Confidence Adjustment === */ -}}
+         {{- $cache_confidence_threshold := 0.8 -}}
+         {{- if or (contains $query "what") (contains $query "when") (contains $query "where") -}}
+             {{- $cache_confidence_threshold = 0.95 -}}
+         {{- end -}}
+          {{- if contains $query "calculate" -}}
+            {{- $cache_confidence_threshold = 0.4 -}}
+        {{- end -}}
+
+       {{- /* === Simulated Short-Term Memory Size Adjustment === */ -}}
+       {{- $short_term_memory_size := 5 -}}
+        {{- if gt (len $query) 100 -}}
+            {{- $short_term_memory_size = 10 -}}
+        {{- end -}}
+      {{- /* === Simulated Streaming Priority Adjustment === */ -}}
+        {{- $streaming_priority := "balanced" -}}
+        {{- if or (contains $query "urgent") (contains $query "fast") -}}
+            {{- $streaming_priority = "high" -}}
+        {{- end -}}
+       {{- /* === Simulated Compression Relevance Threshold Adjustment === */ -}}
+          {{- $compression_relevance_threshold := 0.6 -}}
+        {{- if or (contains $query "important") (contains $query "critical") -}}
+           {{- $compression_relevance_threshold = 0.8 -}}
+        {{- end -}}
+
+       {{- /* === Simulated Performance Feedback Interval Adjustment === */ -}}
+          {{- $performance_feedback_interval := "every 5 responses" -}}
+          {{- if contains $query "feedback" -}}
+              {{- $performance_feedback_interval = "immediately" -}}
+          {{- end -}}
+        {{- /* === Simulated Response Tone Adjustment === */ -}}
+          {{- $response_tone := "friendly" -}}
+         {{- if contains $query "formal" -}}
+              {{- $response_tone = "formal" -}}
+        {{- end - }}
+        {{- if contains $query "unhappy" -}}
+             {{- $response_tone = "apologetic" -}}
+         {{- end -}}
+           {{- /* === Simulated Proactive Feedback Interval Adjustment === */ -}}
+              {{- $proactive_feedback_interval := "every 10 responses" -}}
+              {{- if contains $query "suggestions" -}}
+                 {{- $proactive_feedback_interval = "every 2 responses" -}}
+             {{- end -}}
+            {{- /* === Simulated Max Active Contexts Adjustment === */ -}}
+           {{- $max_active_contexts := 2 -}}
+          {{- if contains $query "multiple" -}}
+               {{- $max_active_contexts = 5 -}}
+          {{- end -}}
+        {{- /* === Simulated Model Selection Strategy Adjustment === */ -}}
+        {{- $model_selection_strategy := "hybrid" -}}
+        {{- if contains $query "code" -}}
+           {{- $model_selection_strategy = "code_focused" -}}
+        {{- end -}}
+         {{- /* === Simulated Compression Rate Adjustment === */ -}}
+            {{- $compression_rate := "normal" -}}
+        {{- if contains $query "fast" -}}
+            {{- $compression_rate = "high" -}}
+        {{- end -}}
+          {{- /* === User Profile (Placeholder - needs external function) === */ -}}
+        {{- $user_profile := "get_user_profile()" -}}
+
+          {{- /* === Simulated Conversation Mode Adjustment === */ -}}
+         {{- $conversation_mode := "chat" -}}
+          {{- if contains $query "task" -}}
+            {{- $conversation_mode = "task_oriented" -}}
+         {{- end -}}
+           {{- /* === Simulated Reasoning Explanation Level Adjustment === */ -}}
+            {{- $reasoning_explanation_level := "summary" -}}
+             {{- if contains $query "detailed" -}}
+                 {{- $reasoning_explanation_level = "full" -}}
+             {{- end -}}
+                {{- /* === Simulated Memory Snapshot Frequency Adjustment === */ -}}
+             {{- $memory_snapshot_frequency := "hourly" -}}
+            {{- if contains $query "backup" -}}
+                 {{- $memory_snapshot_frequency = "every interaction" -}}
+            {{- end -}}
+
+            {{- /* === Simulated Code Generation Style Adjustment === */ -}}
+            {{- $code_generation_style := "concise" -}}
+            {{- if contains $query "verbose" -}}
+               {{- $code_generation_style = "verbose" -}}
+           {{- end -}}
+
+             {{- /* === Simulated Evolution Rate Adjustment === */ -}}
+               {{- $evolution_rate := "normal" -}}
+                 {{- if contains $query "improve" -}}
+                    {{- $evolution_rate = "fast" -}}
+                 {{- end -}}
+
+                 {{- /* === Simulated Mutation Rate Adjustment === */ -}}
+                  {{- $mutation_rate := "low" -}}
+                 {{- if contains $query "experiment" -}}
+                      {{- $mutation_rate = "high" -}}
+                 {{- end -}}
+                    {{- /* === Simulated Fitness Function Adjustment === */ -}}
+                    {{- $fitness_function := "accuracy" -}}
+                 {{- if contains $query "creative" -}}
+                     {{- $fitness_function = "creativity" -}}
+                  {{- end -}}
+                    {{- /* === Simulated Planning Horizon Adjustment === */ -}}
+                   {{- $planning_horizon := "short-term" -}}
+                 {{- if contains $query "future" -}}
+                     {{- $planning_horizon = "long-term" -}}
+                 {{- end -}}
+                     {{- /* === Simulated Plan Complexity Adjustment === */ -}}
+                   {{- $plan_complexity := "simple" -}}
+                    {{- if contains $query "complex" -}}
+                       {{- $plan_complexity = "advanced" -}}
+                   {{- end -}}
+                      {{- /* === Simulated Goal Hierarchy Adjustment === */ -}}
+                    {{- $goal_hierarchy := "flat" -}}
+                 {{- if contains $query "organized" -}}
+                      {{- $goal_hierarchy = "hierarchical" -}}
+                   {{- end -}}
+
+        {{- /* === Simulated Security Level Adjustment === */ -}}
+        {{- $security_level := "medium" -}}
+        {{- if contains $query "confidential" -}}
+            {{- $security_level = "high" -}}
+        {{- end -}}
+
+        {{- /* === Simulated Anonymization Strategy Adjustment === */ -}}
+        {{- $anonymization_strategy := "pseudonymization" -}}
+        {{- if contains $query "privacy" -}}
+            {{- $anonymization_strategy = "full_anonymization" -}}
+        {{- end -}}
+
+        {{- /* === Simulated Code Language Adjustment === */ -}}
+         {{- $code_language := "python" -}}
+        {{- if contains $query "javascript" -}}
+            {{- $code_language = "javascript" -}}
+        {{- end -}}
+
+        {{- /* === Simulated Code Framework Adjustment === */ -}}
+         {{- $code_framework := "none" -}}
+         {{- if contains $query "react" -}}
+           {{- $code_framework = "react" -}}
+        {{- end -}}
+
+         {{- /* === Simulated Introspection Frequency Adjustment === */ -}}
+           {{- $introspection_frequency := "daily" -}}
+          {{- if contains $query "improve" -}}
+              {{- $introspection_frequency = "hourly" -}}
+         {{- end -}}
+
+        {{- /* === Simulated Learning Rate Meta Adjustment === */ -}}
+         {{- $learning_rate_meta := "0.01" -}}
+          {{- if contains $query "quickly" -}}
+             {{- $learning_rate_meta = "0.1" -}}
+          {{- end -}}
+
+          {{- /* === Simulated Strategy Evaluation Criteria Adjustment === */ -}}
+           {{- $strategy_evaluation_criteria := "accuracy" -}}
+           {{- if contains $query "efficiency" -}}
+               {{- $strategy_evaluation_criteria = "efficiency" -}}
+           {{- end -}}
+
+           {{- /* === Simulated Emotional Depth Adjustment === */ -}}
+           {{- $emotional_depth := "surface" -}}
+           {{- if contains $query "empathy" -}}
+              {{- $emotional_depth = "deep" -}}
+          {{- end -}}
+             {{- /* === Simulated Empathy Level Adjustment === */ -}}
+         {{- $empathy_level := "medium" -}}
+          {{- if contains $query "understanding" -}}
+               {{- $empathy_level = "high" -}}
+         {{- end -}}
+              {{- /* === Simulated Nuance Detection Threshold Adjustment === */ -}}
+             {{- $nuance_detection_threshold := 0.5 -}}
+         {{- if contains $query "subtle" -}}
+               {{- $nuance_detection_threshold = 0.7 -}}
+         {{- end -}}
+
+        {{- /* === Simulated Future Simulation Depth Adjustment === */ -}}
+           {{- $future_simulation_depth := "short" -}}
+           {{- if contains $query "long-term" -}}
+              {{- $future_simulation_depth = "deep" -}}
+           {{- end -}}
+
+         {{- /* === Simulated Scenario Divergence Rate Adjustment === */ -}}
+           {{- $scenario_divergence_rate := "normal" -}}
+            {{- if contains $query "unpredictable" -}}
+               {{- $scenario_divergence_rate = "high" -}}
+            {{- end -}}
+
+            {{- /* === Simulated Variable Sensitivity Adjustment === */ -}}
+           {{- $variable_sensitivity := "medium" -}}
+            {{- if contains $query "critical" -}}
+                {{- $variable_sensitivity = "high" -}}
+           {{- end -}}
+         {{- /* === Simulated Art Style Preference Adjustment === */ -}}
+             {{- $art_style_preference := "modern" -}}
+             {{- if contains $query "classic" -}}
+                {{- $art_style_preference = "classic" -}}
+           {{- end -}}
+        {{- /* === Simulated Creativity Level Adjustment === */ -}}
+           {{- $creativity_level := "medium" -}}
+          {{- if contains $query "original" -}}
+                {{- $creativity_level = "high" -}}
+          {{- end -}}
+         {{- /* === Simulated Originality Goal Adjustment === */ -}}
+            {{- $originality_goal := "moderate" -}}
+         {{- if contains $query "unique" -}}
+               {{- $originality_goal = "high" -}}
+           {{- end -}}
+
+        
+        Parameter Adjustments:
+        - Reasoning Depth: {{ $reasoning_depth }}
+        - Cache Confidence Threshold: {{ $cache_confidence_threshold }}
+        - Short-Term Memory Size: {{ $short_term_memory_size }}
+        - Streaming Priority: {{ $streaming_priority }}
+        - Compression Relevance Threshold: {{ $compression_relevance_threshold }}
+        - Performance Feedback Interval: {{ $performance_feedback_interval }}
+        - Response Tone: {{ $response_tone }}
+        - Proactive Feedback Interval: {{ $proactive_feedback_interval }}
+        - Max Active Contexts: {{ $max_active_contexts }}
+        - Model Selection Strategy: {{ $model_selection_strategy }}
+        - Compression Rate: {{ $compression_rate }}
+        - User Profile: {{ $user_profile }} (Placeholder - Needs external function)
+        - Conversation Mode: {{ $conversation_mode }}
+        - Reasoning Explanation Level: {{ $reasoning_explanation_level }}
+        - Memory Snapshot Frequency: {{ $memory_snapshot_frequency }}
+         - Code Generation Style: {{ $code_generation_style }}
+         - Evolution Rate: {{ $evolution_rate }}
+         - Mutation Rate: {{ $mutation_rate }}
+          - Fitness Function: {{ $fitness_function }}
+          - Planning Horizon: {{ $planning_horizon }}
+          - Plan Complexity: {{ $plan_complexity }}
+           - Goal Hierarchy: {{ $goal_hierarchy }}
+           - Security Level: {{ $security_level }}
+           - Anonymization Strategy: {{ $anonymization_strategy }}
+            - Code Language: {{ $code_language }}
+             - Code Framework: {{ $code_framework }}
+             - Introspection Frequency: {{ $introspection_frequency }}
+            - Learning Rate Meta: {{ $learning_rate_meta }}
+            - Strategy Evaluation Criteria: {{ $strategy_evaluation_criteria }}
+             - Emotional Depth: {{ $emotional_depth }}
+              - Empathy Level: {{ $empathy_level }}
+              - Nuance Detection Threshold: {{ $nuance_detection_threshold }}
+               - Future Simulation Depth: {{ $future_simulation_depth }}
+               - Scenario Divergence Rate: {{ $scenario_divergence_rate }}
+                - Variable Sensitivity: {{ $variable_sensitivity }}
+                - Art Style Preference: {{ $art_style_preference }}
+                 - Creativity Level: {{ $creativity_level }}
+                  - Originality Goal: {{ $originality_goal }}
+
+       
+    {{- end }}
+<|eot_id|>
 {{- if .ShortTermMemory }}
 <|start_header_id|>short_term_memory<|end_header_id|>
 {{.ShortTermMemory}}<|eot_id|>
